@@ -25,7 +25,7 @@ architecture behav of RISCV_RISB_tb is
     constant dataWidth  : integer := 32;
     constant addrWidth  : integer := 32;
     constant memDepth   : integer := 100; -- Taille de la mémoire pour la simulation
-    constant memoryFile : string  := "store_01.hex.txt"; -- Fichier contenant vos instructions (I-Type, R-Type)
+    constant memoryFile : string  := "store_02.hex.txt"; -- Fichier contenant vos instructions (I-Type, R-Type)
 
     -- Signaux de test
     signal clk_t   : std_logic := '0';

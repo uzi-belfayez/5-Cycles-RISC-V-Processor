@@ -11,7 +11,7 @@ entity dmem is
 	(
 		DATA_WIDTH : natural := 32;
 		ADDR_WIDTH : natural := 32;
-        MEM_DEPTH  : natural := 100
+        MEM_DEPTH  : natural := 32
 	);
 
 	port 

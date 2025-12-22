@@ -14,44 +14,35 @@ entity imm_ext_risb is
 end entity imm_ext_risb;
 
 architecture behav of imm_ext_risb is
-    signal immValue : unsigned (31 downto 0);
-    
-    alias immValue_b0       : std_logic is immValue(0);
-    alias immValue_b4_1     : unsigned(3 downto 0) is immValue(4 downto 1);
-    alias immValue_b10_5    : unsigned(5 downto 0) is immValue(10 downto 5);
-    alias immValue_b11      : std_logic is immValue(11);
-    alias immValue_b19_12   : unsigned(7 downto 0) is immValue(19 downto 12);
-    alias immValue_b30_20   : unsigned(10 downto 0) is immValue(30 downto 20);
-    alias immValue_b31      : std_logic is immValue(31);
-
+    signal immValue : unsigned(31 downto 0);
 begin
     process (insType, instr)
     begin
         immValue <= (others => '0');
         case insType is
-            -- Type I et L (Load) partagent le même format immédiat
             when I_TYPE | L_TYPE => 
-                immValue_b0       <= instr(20);
-                immValue_b4_1     <= unsigned(instr(24 downto 21));
-                immValue_b10_5    <= unsigned(instr(30 downto 25));
-                immValue_b11      <= instr(31);
-                -- Extension signe
-                immValue_b19_12   <= (others => instr(31));
-                immValue_b30_20   <= (others => instr(31));
-                immValue_b31      <= instr(31);
+                -- I-Type: imm[11:0] = instr[31:20]
+                immValue(11 downto 0) <= unsigned(instr(31 downto 20));
+                -- Extension de signe
+                if instr(31) = '1' then immValue(31 downto 12) <= (others => '1'); end if;
 
-            -- Type S (Store) : Immediat éclaté
             when S_TYPE => 
-                immValue_b0       <= instr(7);                     -- bit 7
-                immValue_b4_1     <= unsigned(instr(11 downto 8)); -- bits 11:8
-                immValue_b10_5    <= unsigned(instr(30 downto 25));-- bits 30:25
-                immValue_b11      <= instr(31);                    -- bit 31
-                -- Extension signe
-                immValue_b19_12   <= (others => instr(31));
-                immValue_b30_20   <= (others => instr(31));
-                immValue_b31      <= instr(31);
+                -- S-Type: imm[11:5]=instr[31:25], imm[4:0]=instr[11:7]
+                immValue(4 downto 0)   <= unsigned(instr(11 downto 7));
+                immValue(11 downto 5)  <= unsigned(instr(31 downto 25));
+                -- Extension de signe
+                if instr(31) = '1' then immValue(31 downto 12) <= (others => '1'); end if;
+                
+            when B_TYPE =>
+                 -- B-Type (pour info)
+                immValue(0) <= '0';
+                immValue(4 downto 1)   <= unsigned(instr(11 downto 8));
+                immValue(10 downto 5)  <= unsigned(instr(30 downto 25));
+                immValue(11)           <= instr(7);
+                if instr(31) = '1' then immValue(31 downto 12) <= (others => '1'); end if;
 
-            when others => null;
+            when others => 
+                immValue <= (others => '0');
         end case;
     end process;
     immExt <= std_logic_vector(immValue);
