@@ -1,81 +1,85 @@
-library IEEE;
-use IEEE.std_logic_1164.ALL;
-use IEEE.numeric_std.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 use std.textio.all;
 
 entity imem is
-    generic 
-    (
-    DATA_WIDTH  :   natural:=32;
-    ADDR_WIDTH  :   natural:=8;
-    MEM_DEPTH   :   natural:=100;
-    INIT_FILE   :   string
+    generic (
+        DATA_WIDTH : integer := 32;
+        ADDR_WIDTH : integer := 32;
+        MEM_DEPTH  : integer := 100;
+        INIT_FILE  : string  := "prog_jump.hex"
     );
-    port 
-    (
-        address     : in    std_logic_vector (ADDR_WIDTH - 1 downto 0);
-        Data_Out    : out   std_logic_vector (DATA_WIDTH - 1 downto 0)
+    port (
+        clk       : in  std_logic;
+        address   : in  std_logic_vector(ADDR_WIDTH-1 downto 0);
+        Data_Out  : out std_logic_vector(DATA_WIDTH-1 downto 0)
     );
-end entity imem;
+end entity;
 
-architecture behav of imem is
-
-    --type    memType is array (0 to 2**ADDR_WIDTH - 1) of std_logic_vector(DATA_WIDTH - 1 downto 0);
-    type    memType is array (0 to MEM_DEPTH - 1) of std_logic_vector(DATA_WIDTH - 1 downto 0);
-    -- function converting hexadecimal string to std_logic_vector
-    function str_to_slv(str : string) return std_logic_vector is
-        alias str_norm : string(1 to str'length) is str;
-        variable char_v : character;
-        variable val_of_char_v : natural;
-        variable res_v : std_logic_vector(4 * str'length - 1 downto 0);
+architecture behavior of imem is
+    type mem_type is array (0 to MEM_DEPTH-1) of std_logic_vector(DATA_WIDTH-1 downto 0);
+    
+    -- Fonction de conversion Hex Char -> Std_logic_vector (4 bits)
+    function hex_char_to_slv(c : character) return std_logic_vector is
     begin
-        for str_norm_idx in str_norm'range loop
-            char_v := str_norm(str_norm_idx);
-            case char_v is
-                when '0' to '9' => val_of_char_v := character'pos(char_v) - character'pos('0');
-                when 'A' to 'F' => val_of_char_v := character'pos(char_v) - character'pos('A') + 10;
-                when 'a' to 'f' => val_of_char_v := character'pos(char_v) - character'pos('a') + 10;
-                when others => report "str_to_slv: Invalid characters for convert" severity ERROR;
-            end case;
-            res_v(res_v'left - 4 * str_norm_idx + 4 downto res_v'left - 4 * str_norm_idx + 1) :=
-            std_logic_vector(to_unsigned(val_of_char_v, 4));
-        end loop;
-        return res_v;
+        case c is
+            when '0' => return "0000";
+            when '1' => return "0001";
+            when '2' => return "0010";
+            when '3' => return "0011";
+            when '4' => return "0100";
+            when '5' => return "0101";
+            when '6' => return "0110";
+            when '7' => return "0111";
+            when '8' => return "1000";
+            when '9' => return "1001";
+            when 'A' | 'a' => return "1010";
+            when 'B' | 'b' => return "1011";
+            when 'C' | 'c' => return "1100";
+            when 'D' | 'd' => return "1101";
+            when 'E' | 'e' => return "1110";
+            when 'F' | 'f' => return "1111";
+            when others => return "0000"; -- Cas erreur
+        end case;
     end function;
 
-    -- function reading the hex (txt) file for instruction memory initialization
-    function memInit(fileName : string) return memType is
-        variable mem_tmp : memType;
-        file filePtr : text;
-        variable line_instr : line;
-        variable instr_str : string(1 to 8);
-        variable inst_num : integer := 0;
-        variable instr_init      :   std_logic_vector(31 downto 0);
+    impure function init_mem(filename : string) return mem_type is
+        file text_file : text open read_mode is filename;
+        variable text_line : line;
+        variable char_buffer : string(1 to 8); -- On lit 8 caractères (32 bits / 4)
+        variable temp_mem : mem_type := (others => (others => '0'));
+        variable char_read : character;
+        variable success : boolean;
     begin
-        file_open(filePtr, fileName, READ_MODE);
-        while (inst_num < MEM_DEPTH and not endfile(filePtr)) loop
-        --while (not endfile(filePtr)) loop
-            readline (filePtr,line_instr);
-            read (line_instr,instr_str);
-            instr_init := str_to_slv(instr_str);
-            mem_tmp(inst_num) := instr_init;
-            inst_num := inst_num + 1;
+        for i in 0 to MEM_DEPTH-1 loop
+            if not endfile(text_file) then
+                readline(text_file, text_line);
+                -- On lit une chaine de caractères (String), pas des bits !
+                read(text_line, char_buffer, success); 
+                
+                if success then
+                    -- Conversion manuelle caractère par caractère
+                    for j in 1 to 8 loop
+                        temp_mem(i)((32 - (j-1)*4 - 1) downto (32 - j*4)) := hex_char_to_slv(char_buffer(j));
+                    end loop;
+                end if;
+            end if;
         end loop;
-        file_close(filePtr);
-        return mem_tmp;
+        return temp_mem;
     end function;
-    signal  mem      : memType:=memInit(INIT_FILE);
+
+    signal ram : mem_type := init_mem(INIT_FILE);
+
+begin
+    process(clk)
     begin
-
-
-    ---- synchronous reading
-    --process (clk)
-    --begin
-    --    if rising_edge(clk) then
-    --        instr   <=  mem(to_integer(pc(dataWidth-1 downto 2)));
-    --    end if;
-    --end process;
-
-    -- asynchronous reading
-    Data_Out   <=  mem(to_integer(unsigned(address)));
-end behav;
+        if rising_edge(clk) then
+            if to_integer(unsigned(address)) < MEM_DEPTH then
+                Data_Out <= ram(to_integer(unsigned(address)));
+            else
+                Data_Out <= (others => '0');
+            end if;
+        end if;
+    end process;
+end behavior;

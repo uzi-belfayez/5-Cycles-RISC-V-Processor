@@ -13,7 +13,7 @@ architecture behav of RISCV_RISB_tb is
             dataWidth      : integer:=32;
             addrWidth      : integer:=32;
             memDepth       : integer:=100;
-            memoryFile     : string
+            memoryFile     : string:= "prog_jump.hex.txt"
         );
         port (
             clk             :   in std_logic;
@@ -25,7 +25,7 @@ architecture behav of RISCV_RISB_tb is
     constant dataWidth  : integer := 32;
     constant addrWidth  : integer := 32;
     constant memDepth   : integer := 100; -- Taille de la mémoire pour la simulation
-    constant memoryFile : string  := "store_02.hex.txt"; -- Fichier contenant vos instructions (I-Type, R-Type)
+    constant memoryFile : string  := "sim.hex.txt"; -- Fichier contenant vos instructions (I-Type, R-Type)
 
     -- Signaux de test
     signal clk_t   : std_logic := '0';
