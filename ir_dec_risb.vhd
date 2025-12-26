@@ -10,17 +10,14 @@ entity ir_dec_risb is
         aluOpWidth  : integer := 5 
     );
     port ( 
-        -- 1. Ajout de l'horloge et du reset (Le contrôleur devient séquentiel)
         clk, reset      : in  std_logic;
         
         instr           : in  std_logic_vector (dataWidth - 1 downto 0);
         bres            : in  std_logic;
-        
-        -- 2. Sorties pour gérer REG (RI) et PC
+
         ri_enable       : out std_logic; -- Active l'écriture dans le Registre d'Instruction
         pc_enable       : out std_logic; -- Autorise le PC à compter (+4)
         
-        -- Signaux Datapath existants
         aluOp           : out std_logic_vector (aluOpWidth - 1 downto 0);
         insType         : out std_logic_vector(2 downto 0);
         loadType        : out std_logic_vector(2 downto 0);
@@ -39,7 +36,7 @@ end entity ir_dec_risb;
 
 architecture behav of ir_dec_risb is
 
-    -- 3. Décomposition en 5 états
+    -- Décomposition en 5 états
     type state_type is (FETCH, DECODE, EXECUTE, MEMORY, WRITEBACK);
     signal current_state : state_type;
 
@@ -109,7 +106,7 @@ begin
     end process;
     btype <= funct3;
 
-    -- C. Signaux de contrôle "Bruts" (Raw)
+    -- C. Signaux de contrôle bruts
     process (instType_local, funct3, opcode, bres)
     begin
         -- Reset par défaut
@@ -155,7 +152,6 @@ begin
     -- =========================================================================
     process (current_state, rdWrite_raw, wrMem_raw, pc_load_raw)
     begin
-        -- Valeurs par défaut (sécurité)
         ri_enable <= '0';
         pc_enable <= '0';
         rdWrite   <= '0';
@@ -171,10 +167,8 @@ case current_state is
         when DECODE =>
             null;
 
--- ir_dec_risb.vhd
 
         when EXECUTE =>
-            -- Retirez ou mettez à 0 l'assignation de pc_load ici
             pc_load <= '0'; 
 
         when MEMORY =>
@@ -183,7 +177,7 @@ case current_state is
         when WRITEBACK =>
             rdWrite <= rdWrite_raw;
             
-            -- GESTION DU PC UNIFIÉE ICI :
+            -- GESTION DU PC UNIFIÉE
             if pc_load_raw = '1' then
                 -- C'est un saut : on charge l'adresse cible maintenant
                 pc_load <= '1'; 
