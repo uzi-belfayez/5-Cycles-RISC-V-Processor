@@ -31,7 +31,7 @@ architecture behav of regbank is
     begin
         if (reset = '1') then
             for i in 0 to 31 loop
-                --regBank32(i)    <= (others => '0');
+                
                 regBank32(i)    <= std_logic_vector(to_unsigned(i,dataWidth));
             end loop;
         elsif rising_edge(clk) then
