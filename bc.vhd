@@ -29,22 +29,22 @@ begin
         bres <= '0'; -- Par défaut, on ne saute pas
 
         case btype is
-            when "000" => -- BEQ (Equal)
+            when "000" => -- BEQ 
                 if src1 = src2 then bres <= '1'; end if;
                 
-            when "001" => -- BNE (Not Equal)
+            when "001" => -- BNE 
                 if src1 /= src2 then bres <= '1'; end if;
                 
-            when "100" => -- BLT (Less Than - Signed)
+            when "100" => -- BLT 
                 if s1_signed < s2_signed then bres <= '1'; end if;
                 
-            when "101" => -- BGE (Greater or Equal - Signed)
+            when "101" => -- BGE 
                 if s1_signed >= s2_signed then bres <= '1'; end if;
                 
-            when "110" => -- BLTU (Less Than - Unsigned)
+            when "110" => -- BLTU 
                 if s1_unsigned < s2_unsigned then bres <= '1'; end if;
                 
-            when "111" => -- BGEU (Greater or Equal - Unsigned)
+            when "111" => -- BGEU 
                 if s1_unsigned >= s2_unsigned then bres <= '1'; end if;
                 
             when others => 
