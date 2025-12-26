@@ -7,7 +7,7 @@ end entity RISCV_RISB_tb;
 
 architecture behav of RISCV_RISB_tb is
 
-    -- Déclaration du composant à tester (Votre processeur Top-Level)
+
     component RISCV_RISB
         generic (
             dataWidth      : integer:=32;
@@ -21,11 +21,11 @@ architecture behav of RISCV_RISB_tb is
         );
     end component;
 
-    -- Constantes de configuration
+
     constant dataWidth  : integer := 32;
     constant addrWidth  : integer := 32;
-    constant memDepth   : integer := 100; -- Taille de la mémoire pour la simulation
-    constant memoryFile : string  := "sim.hex.txt"; -- Fichier contenant vos instructions (I-Type, R-Type)
+    constant memDepth   : integer := 100; 
+    constant memoryFile : string  := "sim.hex.txt"; 
 
     -- Signaux de test
     signal clk_t   : std_logic := '0';
@@ -33,7 +33,6 @@ architecture behav of RISCV_RISB_tb is
 
 begin
 
-    -- Instanciation du DUT (Device Under Test)
     dut: RISCV_RISB 
         generic map (
             dataWidth   => dataWidth,
