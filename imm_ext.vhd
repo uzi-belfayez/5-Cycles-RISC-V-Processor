@@ -36,14 +36,12 @@ begin
                 immValue(11)           <= instr(7);
                 if instr(31) = '1' then immValue(31 downto 12) <= (others => '1'); end if;
 
-            -- NOUVEAU : TYPE J (JAL)
             when J_TYPE =>
                 immValue(0) <= '0';
                 immValue(10 downto 1)  <= unsigned(instr(30 downto 21));
                 immValue(11)           <= instr(20);
                 immValue(19 downto 12) <= unsigned(instr(19 downto 12));
                 immValue(20)           <= instr(31);
-                -- Extension de signe
                 if instr(31) = '1' then immValue(31 downto 21) <= (others => '1'); end if;
             when U_TYPE =>
                 immValue(31 downto 12) <= unsigned(instr(31 downto 12));
