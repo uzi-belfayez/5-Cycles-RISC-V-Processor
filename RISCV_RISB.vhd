@@ -9,7 +9,6 @@ entity RISCV_RISB is
         dataWidth      : integer := 32;
         addrWidth      : integer := 32;
         memDepth       : integer := 100;
-        -- Choisissez votre programme ici
         memoryFile     : string  := "./prog.hex" 
     );
     port (
@@ -63,7 +62,7 @@ architecture behav of RISCV_RISB is
         ); 
     end component;
 
-    -- Composants inchangés (Standard)
+    -- Composants inchangés
     component regbank generic (dataWidth:integer); port(RA,RB,RW:in std_logic_vector; BusW:in std_logic_vector; BusA,BusB:out std_logic_vector; WE,clk,reset:in std_logic); end component;
     component alu generic (dataWidth,aluOpWidth:integer); port(opA,opB,aluOp:in std_logic_vector; res:out std_logic_vector); end component;
     component dmem generic (DATA_WIDTH,ADDR_WIDTH,MEM_DEPTH:natural); port(addr,data:in std_logic_vector; write,clk:in std_logic; q:out std_logic_vector); end component;
@@ -75,9 +74,7 @@ architecture behav of RISCV_RISB is
     component mux_opa generic (DATA_WIDTH:integer); port(in_rs1,in_pc,in_zero:in std_logic_vector; sel:in std_logic_vector; dout:out std_logic_vector); end component;
     component bc generic (dataWidth:integer); port(src1,src2:in std_logic_vector; btype:in std_logic_vector; bres:out std_logic); end component;
 
-    -- =========================================================================
-    -- 2. SIGNAUX INTERNES
-    -- =========================================================================
+
 
     -- Signaux Instruction
     signal instr_raw    : std_logic_vector(dataWidth-1 downto 0); -- Sortie IMEM
@@ -108,9 +105,7 @@ architecture behav of RISCV_RISB is
 
 begin
 
-    -- =========================================================================
-    -- 3. CÂBLAGE ET INSTANCIATION
-    -- =========================================================================
+
 
     -- [PC Logic]
     pcBy4 <= "00" & pc(addrWidth-1 downto 2) when to_integer(unsigned(pc)) < memDepth*4 else (others=>'0');
@@ -147,16 +142,14 @@ begin
             clk => clk, reset => reset,
             instr => instr, 
             bres => bres,
-            -- Sorties de pilotage séquentiel
             ri_enable => ri_enable, 
             pc_enable => pc_enable,
-            -- Autres contrôles
             aluOp => aluOp, insType => insType, loadType => loadType, memType => memType,
             RI_sel => RI_sel, rdWrite => rdWrite, wrMem => wrMem_sig, 
             loadAccJump => loadAccJump, pc_load => pc_load, bsel => bsel, btype => btype
         );
 
-    -- [Datapath Standard] (Peu de changements ici)
+
     
     imm_ext_1 : imm_ext_risb generic map (dataWidth=>dataWidth) port map (instr=>instr, insType=>insType, immExt=>immExt);
     
@@ -165,15 +158,15 @@ begin
 
     bc_1 : bc generic map (dataWidth=>dataWidth) port map (src1=>src1, src2=>src2, btype=>btype, bres=>bres);
 
-    -- Mux OpA (Rs1 / PC / Zero)
+
     mux_opa_1 : mux_opa generic map (DATA_WIDTH=>dataWidth) 
         port map (in_rs1=>src1, in_pc=>pc, in_zero=>zero_sig, sel=>bsel, dout=>src1Mux);
 
-    -- Mux OpB (Rs2 / Imm)
+
     mux_alu_b : mux2to1 generic map (DATA_WIDTH=>dataWidth) 
         port map (in0=>src2, in1=>immExt, sel=>RI_sel, dout=>src2Mux);
     
-    -- ALU
+
     alu_1 : alu generic map (dataWidth=>dataWidth, aluOpWidth=>aluOpWidth) 
         port map (opA=>src1Mux, opB=>src2Mux, aluOp=>aluOp, res=>result);
 
