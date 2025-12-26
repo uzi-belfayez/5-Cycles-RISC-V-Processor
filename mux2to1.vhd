@@ -6,9 +6,9 @@ entity mux2to1 is
         DATA_WIDTH : integer := 32
     );
     port (
-        in0     : in  std_logic_vector(DATA_WIDTH-1 downto 0); -- Entrée 0 (ex: src2 / RegB)
-        in1     : in  std_logic_vector(DATA_WIDTH-1 downto 0); -- Entrée 1 (ex: immExt)
-        sel     : in  std_logic;                               -- Selecteur (RI_sel)
+        in0     : in  std_logic_vector(DATA_WIDTH-1 downto 0); -- rc2 / RegB
+        in1     : in  std_logic_vector(DATA_WIDTH-1 downto 0); -- immExt
+        sel     : in  std_logic;                               
         dout    : out std_logic_vector(DATA_WIDTH-1 downto 0)
     );
 end entity mux2to1;
