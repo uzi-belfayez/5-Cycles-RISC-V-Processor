@@ -11,8 +11,7 @@ package constants is
     constant    U_TYP2_OPCODE  :   std_logic_vector(6 downto 0):= "0010111";
     constant    J_TYP1_OPCODE  :   std_logic_vector(6 downto 0):= "1101111";
     constant    J_TYP2_OPCODE  :   std_logic_vector(6 downto 0):= "1100111";
-    constant    L_TYPE_OPCODE  :   std_logic_vector(6 downto 0):= "0000011";   -- for LOAD instructions
-
+    constant    L_TYPE_OPCODE  :   std_logic_vector(6 downto 0):= "0000011";
     constant    R_TYPE  :   std_logic_vector(2 downto 0) := "000";
     constant    I_TYPE  :   std_logic_vector(2 downto 0) := "001";
     constant    S_TYPE  :   std_logic_vector(2 downto 0) := "010";
